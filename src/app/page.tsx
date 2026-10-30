@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import HeroNetwork from "@/components/HeroNetwork";
+import Link from "next/link";
 import { Spore } from "@/components/Nav";
 
 const HEADLINE = "The people you know, and the people they know.";
@@ -73,6 +74,14 @@ export default function Landing() {
             </div>
           ))}
         </div>
+        <footer className="rise mt-8 flex gap-5 text-xs text-dim" style={{ animationDelay: "2.1s" }}>
+          <Link href="/privacy" className="hover:text-star">
+            Privacy policy
+          </Link>
+          <Link href="/terms" className="hover:text-star">
+            Terms of service
+          </Link>
+        </footer>
       </div>
     </main>
   );

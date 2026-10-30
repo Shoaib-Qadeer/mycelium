@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { Download, LogOut, Monitor, Moon, Sun, Trash2 } from "lucide-react";
 import Nav from "@/components/Nav";
@@ -118,6 +119,14 @@ export default function SettingsPage() {
             </button>
           )}
         </section>
+        <p className="mt-10 flex gap-5 text-sm text-dim">
+          <Link href="/privacy" className="hover:text-star">
+            Privacy policy
+          </Link>
+          <Link href="/terms" className="hover:text-star">
+            Terms of service
+          </Link>
+        </p>
       </main>
 
       {deleting && <DeleteAccount stats={stats} onClose={() => setDeleting(false)} />}

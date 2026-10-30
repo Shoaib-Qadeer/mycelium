@@ -61,7 +61,7 @@ function MeProvider({ children }: { children: React.ReactNode }) {
       .catch(() => setMe(null));
   }, []);
   useEffect(() => refreshMe(), [refreshMe]);
-  const gated = me && me.status !== "active" && path !== "/" && !path?.startsWith("/denied") && !path?.startsWith("/settings");
+  const gated = me && me.status !== "active" && path !== "/" && !["/denied", "/settings", "/privacy", "/terms"].some((x) => path?.startsWith(x));
   return <MeCtx.Provider value={{ me, refreshMe }}>{gated ? <Waiting status={me.status} /> : children}</MeCtx.Provider>;
 }
 
