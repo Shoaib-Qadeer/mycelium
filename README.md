@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mycelium
 
-## Getting Started
+Map the people you know as a living network, see where it is strong or fragile, and find warm introductions through friends.
 
-First, run the development server:
+Built for the Learning Planet Institute club, from an idea by Michael Bäcklund.
+
+## What's in v0
+
+- **My map**: an interactive constellation of your network, with you at the centre. Closer ties sit nearer.
+- **Four ways to add people**: one at a time, a whole group at once, describing people in your own words (Gemini extracts names, circles and who knows whom), or importing a CSV (Mycelium template, LinkedIn `Connections.csv`, or any sheet with a name column). Download your map as CSV any time.
+- **Network health**: people who hold a group together (single points of failure), brokers between circles, people who know nobody else in your map, fading close ties, over-reliance on one circle, fields where you know only one person, and suggested introductions between your own friends.
+- **Club reach**: everyone's maps woven together, shown blind (roles, organizations, places and interests, never names, notes or emails). Merges people several members know, shows how many people you're 2 or 3 steps from, field coverage and blind spots, and a "Who are you trying to reach?" search with the warmest path.
+- **Intros**: ask the member who knows someone for an introduction. They see your note, decide, and reply. Names are never revealed by the app.
+- **Access**: `@learningplanetinstitute.org` accounts can sign in; admins invite guests from other domains on the Access page.
+
+People marked "Keep out of club reach" never appear in the club view.
+
+## Stack
+
+Next.js 16 (App Router), NextAuth (Google), MongoDB Atlas, Gemini API, react-force-graph, Tailwind.
+
+## Run locally
 
 ```bash
+cp .env.example .env.local   # fill in the values
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Import this repo in Vercel (framework: Next.js, defaults are fine).
+2. Add every variable from `.env.example` in Project Settings > Environment Variables. Set `NEXTAUTH_URL` to the deployed URL.
+3. In Google Cloud, add `https://<your-domain>/api/auth/callback/google` as an authorized redirect URI on the OAuth client.
+4. In MongoDB Atlas, make sure Network Access allows Vercel (0.0.0.0/0 on the free tier).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## CSV template
+
+| name | circle | field | role | org | city | country | tags | closeness | last_contact | email | notes | knows |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+
+`tags` and `knows` are separated by semicolons. `closeness` is 1 (met once or twice) to 5 (inner circle). `last_contact` is `YYYY-MM-DD`.
