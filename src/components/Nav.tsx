@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { signOut } from "next-auth/react";
-import { LogOut, ShieldCheck } from "lucide-react";
+import { Settings, ShieldCheck } from "lucide-react";
 import { useMe } from "@/app/providers";
 
 export function Spore({ size = 22 }: { size?: number }) {
@@ -64,7 +63,7 @@ export default function Nav({ floating = false }: { floating?: boolean }) {
             >
               {l.label}
               {l.href === "/intros" && me?.pendingIntros ? (
-                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-spore px-1 text-[10px] font-bold text-[#2a1d05]">
+                <span className="ml-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-spore-fill px-1 text-[10px] font-bold text-[#2a1d05]">
                   {me.pendingIntros}
                 </span>
               ) : null}
@@ -80,7 +79,7 @@ export default function Nav({ floating = false }: { floating?: boolean }) {
       {me?.isAdmin && (
         <Link
           href="/admin"
-          className={`btn !px-3 !py-1.5 ${path?.startsWith("/admin") ? "bg-spore text-[#2a1d05]" : "btn-ghost"}`}
+          className={`btn !px-3 !py-1.5 ${path?.startsWith("/admin") ? "bg-spore-fill text-[#2a1d05]" : "btn-ghost"}`}
           title="Admin panel"
         >
           <ShieldCheck size={15} />
@@ -93,15 +92,20 @@ export default function Nav({ floating = false }: { floating?: boolean }) {
         </Link>
       )}
       {me && (
-        <div className="flex items-center gap-2">
+        <Link
+          href="/settings"
+          className={`flex items-center gap-2 rounded-full p-1 pr-2.5 transition-colors ${path?.startsWith("/settings") ? "bg-white/10" : "hover:bg-white/8"}`}
+          title="Settings"
+          aria-label="Settings"
+        >
           {me.image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={me.image} alt="" className="h-7 w-7 rounded-full ring-1 ring-white/20" referrerPolicy="no-referrer" />
-          ) : null}
-          <button className="btn btn-quiet" onClick={() => signOut({ callbackUrl: "/" })} aria-label="Sign out" title="Sign out">
-            <LogOut size={16} />
-          </button>
-        </div>
+          ) : (
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-xs">{me.name?.[0]}</span>
+          )}
+          <Settings size={15} className="text-mist" />
+        </Link>
       )}
     </header>
   );

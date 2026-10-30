@@ -70,7 +70,7 @@ export default function AdminPage() {
             >
               {t.label}
               {t.id === "members" && overview?.counts.pending ? (
-                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-spore px-1 text-[10px] font-bold text-[#2a1d05]">
+                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-spore-fill px-1 text-[10px] font-bold text-[#2a1d05]">
                   {overview.counts.pending}
                 </span>
               ) : null}

@@ -160,7 +160,7 @@ export default function ClubPage() {
 
   return (
     <main className="relative h-[100dvh] overflow-hidden">
-      <div className="absolute inset-0" style={{ background: "radial-gradient(900px 700px at 60% 45%, rgba(60,46,120,0.32), transparent 70%)" }} />
+      <div className="absolute inset-0" style={{ background: "radial-gradient(900px 700px at 60% 45%, var(--canvas-glow), transparent 70%)" }} />
       {g && <GraphView nodes={nodes} links={links} highlight={highlight} selected={selected} onSelect={(id) => setSelected(id === g.me ? null : id)} fitKey={1} insetX={-420} />}
       <Nav floating />
 

@@ -33,7 +33,7 @@ export function Toggle({
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full border transition-colors ${
-          checked ? "border-spore/70 bg-spore/80" : "border-white/15 bg-white/8"
+          checked ? "border-spore/70 bg-spore-fill" : "border-white/15 bg-white/8"
         }`}
       >
         <span

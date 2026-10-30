@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import ForceGraph2D, { type ForceGraphMethods } from "react-force-graph-2d";
+import { useCanvasColors } from "@/lib/theme";
 
 export type GNode = {
   id: string;
@@ -50,6 +51,8 @@ export default function GraphView({
   const positions = useRef(new Map<string, { x: number; y: number }>());
   const fitted = useRef<string | number | undefined>(undefined);
   const font = useRef("sans-serif");
+  const colors = useCanvasColors();
+  const lk = (a: number) => `rgba(${colors.link},${Math.min(1, a * colors.linkStrength)})`;
 
   useEffect(() => {
     font.current = getComputedStyle(document.body).fontFamily || "sans-serif";
@@ -120,9 +123,9 @@ export default function GraphView({
         linkCurvature={(l) => (l.kind === "ego" ? 0.06 : 0.22)}
         linkColor={(l) => {
           if (l.kind === "club") return "rgba(242,196,109,0.07)";
-          if (hiLink(l)) return "rgba(242,196,109,0.75)";
-          if (hi || selected) return "rgba(127,214,232,0.05)";
-          return l.kind === "ego" ? "rgba(127,214,232,0.13)" : l.kind === "knows" ? "rgba(185,166,255,0.22)" : "rgba(127,214,232,0.38)";
+          if (hiLink(l)) return colors.light ? "rgba(190,130,20,0.85)" : "rgba(242,196,109,0.75)";
+          if (hi || selected) return lk(0.05);
+          return l.kind === "ego" ? lk(0.13) : l.kind === "knows" ? (colors.light ? "rgba(110,80,200,0.3)" : "rgba(185,166,255,0.22)") : lk(0.38);
         }}
         linkLineDash={(l) => (l.kind === "club" ? [2, 4] : null)}
         linkWidth={(l) => (l.kind === "club" ? 0.6 : hiLink(l) ? 1.6 : l.kind === "link" ? 1 : 0.6)}
@@ -158,14 +161,14 @@ export default function GraphView({
           ctx.arc(x, y, r, 0, Math.PI * 2);
           ctx.fill();
           if (n.kind === "member") {
-            ctx.strokeStyle = "rgba(255,255,255,0.85)";
+            ctx.strokeStyle = colors.label;
             ctx.lineWidth = 1 / scale;
             ctx.beginPath();
             ctx.arc(x, y, r + 2 / scale, 0, Math.PI * 2);
             ctx.stroke();
           }
           if (n.id === selected) {
-            ctx.strokeStyle = "#FFF3D1";
+            ctx.strokeStyle = colors.light ? "#a26d0c" : "#FFF3D1";
             ctx.lineWidth = 1.5 / scale;
             ctx.beginPath();
             ctx.arc(x, y, r + 4 / scale, 0, Math.PI * 2);
@@ -178,8 +181,8 @@ export default function GraphView({
             ctx.font = `${n.kind === "person" ? 500 : 650} ${fs}px ${font.current}`;
             ctx.textAlign = "center";
             ctx.textBaseline = "top";
-            ctx.fillStyle = n.kind === "you" ? "#F7D48F" : "rgba(238,240,255,0.92)";
-            ctx.shadowColor = "rgba(9,13,34,0.9)";
+            ctx.fillStyle = n.kind === "you" ? colors.you : colors.label;
+            ctx.shadowColor = colors.halo;
             ctx.shadowBlur = 4;
             ctx.fillText(n.label, x, y + r + 3 / scale);
             ctx.shadowBlur = 0;

@@ -3,6 +3,7 @@
 import { SessionProvider, signOut } from "next-auth/react";
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { useSystemThemeSync } from "@/lib/theme";
 
 export type Features = {
   describe: boolean;
@@ -52,6 +53,7 @@ function Waiting({ status }: { status: MeInfo["status"] }) {
 function MeProvider({ children }: { children: React.ReactNode }) {
   const [me, setMe] = useState<MeInfo | null>(null);
   const path = usePathname();
+  useSystemThemeSync();
   const refreshMe = useCallback(() => {
     fetch("/api/me")
       .then((r) => (r.ok ? r.json() : null))
@@ -59,7 +61,7 @@ function MeProvider({ children }: { children: React.ReactNode }) {
       .catch(() => setMe(null));
   }, []);
   useEffect(() => refreshMe(), [refreshMe]);
-  const gated = me && me.status !== "active" && path !== "/" && !path?.startsWith("/denied");
+  const gated = me && me.status !== "active" && path !== "/" && !path?.startsWith("/denied") && !path?.startsWith("/settings");
   return <MeCtx.Provider value={{ me, refreshMe }}>{gated ? <Waiting status={me.status} /> : children}</MeCtx.Provider>;
 }
 

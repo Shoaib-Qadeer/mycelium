@@ -117,7 +117,7 @@ export default function MapPage() {
     <main className="relative h-[100dvh] overflow-hidden">
       <div
         className="absolute inset-0"
-        style={{ background: "radial-gradient(900px 700px at 50% 45%, rgba(40,52,110,0.35), transparent 70%)" }}
+        style={{ background: "radial-gradient(900px 700px at 50% 45%, var(--canvas-glow), transparent 70%)" }}
       />
       {!empty && (
         <GraphView nodes={nodes} links={glinks} highlight={highlight} selected={selected} onSelect={select} fitKey={fitKey} insetX={panelOpen ? 400 : 0} />

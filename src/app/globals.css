@@ -15,8 +15,50 @@
   --cyan: #7fd6e8;
   --rose: #f29bb2;
   --moss: #a8e39a;
+  --spore-fill: #f2c46d;
+  --hover: rgba(185, 196, 255, 0.08);
+  --field: rgba(9, 13, 34, 0.6);
+  --chip: rgba(185, 196, 255, 0.09);
+  --glow-a: rgba(127, 214, 232, 0.08);
+  --glow-b: rgba(185, 166, 255, 0.08);
+  --canvas-glow: rgba(40, 52, 110, 0.35);
+  /* Read by the graph canvases */
+  --graph-label: rgba(238, 240, 255, 0.92);
+  --graph-halo: rgba(9, 13, 34, 0.9);
+  --graph-link: 127, 214, 232;
+  --graph-link-strength: 1;
   --font-body: "Hanken Grotesk Variable";
   --font-display: "Fraunces Variable";
+}
+
+/* Daylight: a pale, cool morning sky. Overlays that were white-on-dark become ink-on-light. */
+:root[data-theme="light"] {
+  --night: #e4e8f4;
+  --deep: #eef1f8;
+  --panel: rgba(255, 255, 255, 0.86);
+  --panel-solid: #ffffff;
+  --line: rgba(22, 27, 58, 0.12);
+  --line-strong: rgba(22, 27, 58, 0.24);
+  --star: #161b3a;
+  --mist: #4a5281;
+  --dim: #7a82ab;
+  --spore: #a26d0c;
+  --spore-fill: #f2c46d;
+  --cyan: #13809a;
+  --rose: #c23d66;
+  --moss: #3b8a2f;
+  --hover: rgba(22, 27, 58, 0.06);
+  --field: rgba(255, 255, 255, 0.9);
+  --chip: rgba(22, 27, 58, 0.06);
+  --glow-a: rgba(19, 128, 154, 0.08);
+  --glow-b: rgba(124, 92, 230, 0.07);
+  --canvas-glow: rgba(150, 170, 230, 0.25);
+  --graph-label: rgba(22, 27, 58, 0.9);
+  --graph-halo: rgba(238, 241, 248, 0.95);
+  --graph-link: 40, 110, 140;
+  --graph-link-strength: 1.8;
+  --color-white: #1a2150;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -28,6 +70,7 @@
   --color-mist: var(--mist);
   --color-dim: var(--dim);
   --color-spore: var(--spore);
+  --color-spore-fill: var(--spore-fill);
   --color-cyan: var(--cyan);
   --color-rose: var(--rose);
   --color-moss: var(--moss);
@@ -41,8 +84,8 @@ html {
 
 body {
   background:
-    radial-gradient(1200px 700px at 85% -10%, rgba(127, 214, 232, 0.08), transparent 60%),
-    radial-gradient(900px 600px at -10% 110%, rgba(185, 166, 255, 0.08), transparent 60%),
+    radial-gradient(1200px 700px at 85% -10%, var(--glow-a), transparent 60%),
+    radial-gradient(900px 600px at -10% 110%, var(--glow-b), transparent 60%),
     var(--deep);
   background-attachment: fixed;
   color: var(--star);
@@ -85,7 +128,7 @@ body {
     cursor: not-allowed;
   }
   .btn-spore {
-    background: var(--spore);
+    background: var(--spore-fill);
     color: var(--spore-ink);
   }
   .btn-spore:hover:not(:disabled) {
@@ -96,7 +139,7 @@ body {
     color: var(--star);
   }
   .btn-ghost:hover:not(:disabled) {
-    background: rgba(185, 196, 255, 0.08);
+    background: var(--hover);
   }
   .btn-quiet {
     color: var(--mist);
@@ -104,11 +147,11 @@ body {
   }
   .btn-quiet:hover:not(:disabled) {
     color: var(--star);
-    background: rgba(185, 196, 255, 0.07);
+    background: var(--hover);
   }
   .field {
     width: 100%;
-    background: rgba(9, 13, 34, 0.6);
+    background: var(--field);
     border: 1px solid var(--line);
     border-radius: 10px;
     padding: 0.55rem 0.75rem;
@@ -135,7 +178,7 @@ body {
     border-radius: 999px;
     padding: 0.15rem 0.6rem;
     font-size: 0.75rem;
-    background: rgba(185, 196, 255, 0.09);
+    background: var(--chip);
     color: var(--mist);
   }
   .display {
@@ -147,7 +190,7 @@ body {
 
 .scroll-thin {
   scrollbar-width: thin;
-  scrollbar-color: rgba(185, 196, 255, 0.2) transparent;
+  scrollbar-color: var(--line-strong) transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -157,4 +200,22 @@ body {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* Landing headline: words rise in one by one */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.rise {
+  opacity: 0;
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
