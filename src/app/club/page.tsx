@@ -145,6 +145,18 @@ export default function ClubPage() {
   };
 
   const sel = selected ? byId.get(selected) : null;
+  const f = me?.features;
+
+  if (f && !f.club)
+    return (
+      <div className="min-h-screen">
+        <Nav />
+        <main className="mx-auto max-w-xl px-5 pt-16">
+          <h1 className="display text-4xl font-light">Club reach is switched off</h1>
+          <p className="mt-3 text-mist">The admin has paused the shared club view for now. Your own map still works as usual.</p>
+        </main>
+      </div>
+    );
 
   return (
     <main className="relative h-[100dvh] overflow-hidden">
@@ -163,7 +175,7 @@ export default function ClubPage() {
             path={pathTo(sel.id)}
             nameOf={nameOf}
             onBack={() => setSelected(null)}
-            onIntro={() => setIntro(sel)}
+            onIntro={f?.intros ?? true ? () => setIntro(sel) : null}
           />
         ) : (
           <div className="space-y-7">
@@ -194,6 +206,7 @@ export default function ClubPage() {
               )}
             </section>
 
+            {(f?.clubSearch ?? true) && (
             <section>
               <h2 className="display text-xl">Who are you trying to reach?</h2>
               <form
@@ -251,6 +264,7 @@ export default function ClubPage() {
                 </div>
               )}
             </section>
+            )}
 
             <section>
               <h2 className="display text-xl">Where the club reaches</h2>
@@ -345,7 +359,7 @@ function NodeDetail({
   path: string[] | null;
   nameOf: (id: string) => string;
   onBack: () => void;
-  onIntro: () => void;
+  onIntro: (() => void) | null;
 }) {
   const others = node.knownBy.filter((k) => k.email !== meEmail);
   const mine = node.knownBy.some((k) => k.email === meEmail);
@@ -401,7 +415,7 @@ function NodeDetail({
           </p>
         </div>
       )}
-      {node.type === "person" && others.length > 0 && !mine && (
+      {node.type === "person" && others.length > 0 && !mine && onIntro && (
         <button className="btn btn-spore mt-6" onClick={onIntro}>
           Ask {others.sort((a, b) => b.closeness - a.closeness)[0].name.split(" ")[0]} for an introduction
         </button>

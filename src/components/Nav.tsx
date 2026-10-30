@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LogOut } from "lucide-react";
+import { LogOut, ShieldCheck } from "lucide-react";
 import { useMe } from "@/app/providers";
 
 export function Spore({ size = 22 }: { size?: number }) {
@@ -40,7 +40,9 @@ const LINKS = [
 export default function Nav({ floating = false }: { floating?: boolean }) {
   const path = usePathname();
   const { me } = useMe();
-  const links = me?.isAdmin ? [...LINKS, { href: "/admin", label: "Access" }] : LINKS;
+  const links = LINKS.filter(
+    (l) => !me || (l.href === "/club" ? me.features.club : l.href === "/intros" ? me.features.intros : true)
+  );
   return (
     <header
       className={`${floating ? "absolute left-3 right-3 top-3 z-30" : "sticky top-3 z-30 mx-3"} panel flex items-center gap-2 px-3 py-2 sm:gap-4 sm:px-4`}
@@ -70,6 +72,26 @@ export default function Nav({ floating = false }: { floating?: boolean }) {
           );
         })}
       </nav>
+      {me?.banner && (
+        <p className="hidden max-w-[34ch] truncate text-sm text-spore xl:block" title={me.banner}>
+          {me.banner}
+        </p>
+      )}
+      {me?.isAdmin && (
+        <Link
+          href="/admin"
+          className={`btn !px-3 !py-1.5 ${path?.startsWith("/admin") ? "bg-spore text-[#2a1d05]" : "btn-ghost"}`}
+          title="Admin panel"
+        >
+          <ShieldCheck size={15} />
+          <span className="hidden sm:inline">Admin panel</span>
+          {me.pendingMembers > 0 && (
+            <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-rose px-1 text-[10px] font-bold text-[#2a0510]">
+              {me.pendingMembers}
+            </span>
+          )}
+        </Link>
+      )}
       {me && (
         <div className="flex items-center gap-2">
           {me.image ? (

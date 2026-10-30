@@ -1,119 +1,87 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { X } from "lucide-react";
 import Nav from "@/components/Nav";
+import { useMe } from "@/app/providers";
+import OverviewTab, { type AdminTab, type Overview } from "@/components/admin/OverviewTab";
+import MembersTab from "@/components/admin/MembersTab";
+import { AccessTab, AiTab, FeaturesTab } from "@/components/admin/SettingsTabs";
 
-type AdminData = {
-  domains: string[];
-  admins: string[];
-  allowlist: { email: string; addedBy: string; addedAt: string }[];
-  users: { email: string; name: string; lastSeen: string; people: number }[];
-};
+const TABS: { id: AdminTab; label: string }[] = [
+  { id: "overview", label: "Overview" },
+  { id: "members", label: "Members" },
+  { id: "access", label: "Access" },
+  { id: "features", label: "Features" },
+  { id: "ai", label: "AI" },
+];
 
 export default function AdminPage() {
-  const [data, setData] = useState<AdminData | null>(null);
-  const [denied, setDenied] = useState(false);
-  const [emails, setEmails] = useState("");
-  const [err, setErr] = useState("");
+  const { me, refreshMe } = useMe();
+  const [tab, setTabState] = useState<AdminTab>("overview");
+  const [overview, setOverview] = useState<Overview | null>(null);
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/admin");
-    if (!res.ok) return setDenied(true);
-    setData(await res.json());
+  const loadOverview = useCallback(async () => {
+    const r = await fetch("/api/admin");
+    if (r.ok) setOverview(await r.json());
   }, []);
-  useEffect(() => {
-    load();
-  }, [load]);
 
-  const add = async () => {
-    setErr("");
-    const res = await fetch("/api/admin", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ emails }),
-    });
-    if (!res.ok) return setErr((await res.json()).error);
-    setEmails("");
-    load();
+  useEffect(() => {
+    const t = new URLSearchParams(window.location.search).get("tab") as AdminTab | null;
+    if (t && TABS.some((x) => x.id === t)) setTabState(t);
+    loadOverview();
+    const id = setInterval(loadOverview, 30_000);
+    return () => clearInterval(id);
+  }, [loadOverview]);
+
+  const setTab = (t: AdminTab) => {
+    setTabState(t);
+    window.history.replaceState(null, "", t === "overview" ? "/admin" : `/admin?tab=${t}`);
   };
+  const refresh = () => {
+    loadOverview();
+    refreshMe();
+  };
+
+  if (me && !me.isAdmin)
+    return (
+      <div className="min-h-screen">
+        <Nav />
+        <main className="mx-auto max-w-xl px-5 pt-16">
+          <h1 className="display text-4xl font-light">Admins only</h1>
+          <p className="mt-3 text-mist">This panel is for club admins.</p>
+        </main>
+      </div>
+    );
 
   return (
     <div className="min-h-screen pb-16">
       <Nav />
-      <main className="mx-auto max-w-3xl px-5 pt-10">
-        <h1 className="display text-4xl font-light">Access</h1>
-        {denied ? (
-          <p className="mt-3 text-mist">Only admins can manage access.</p>
-        ) : !data ? (
-          <p className="mt-3 text-mist">Loading</p>
-        ) : (
-          <>
-            <p className="mt-2 max-w-[60ch] text-mist">
-              Anyone with an email at {data.domains.map((d) => `@${d}`).join(" or ")} can sign in. Add guests from other domains below.
-            </p>
-
-            <section className="mt-8">
-              <h2 className="display text-2xl">Invite guests</h2>
-              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                <input
-                  className="field"
-                  value={emails}
-                  onChange={(e) => setEmails(e.target.value)}
-                  placeholder="friend@gmail.com, another@uni.edu"
-                  aria-label="Emails to allow"
-                  onKeyDown={(e) => e.key === "Enter" && add()}
-                />
-                <button className="btn btn-spore" onClick={add} disabled={!emails.trim()}>
-                  Allow access
-                </button>
-              </div>
-              {err && <p className="mt-2 text-sm text-rose">{err}</p>}
-              <ul className="mt-4 divide-y divide-white/8 rounded-xl border border-white/10">
-                {data.admins.map((a) => (
-                  <li key={a} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                    {a}
-                    <span className="text-xs text-dim">admin, set in Vercel</span>
-                  </li>
-                ))}
-                {data.allowlist.map((a) => (
-                  <li key={a.email} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                    {a.email}
-                    <button
-                      className="btn btn-quiet"
-                      aria-label={`Remove ${a.email}`}
-                      onClick={async () => {
-                        await fetch("/api/admin", {
-                          method: "DELETE",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ email: a.email }),
-                        });
-                        load();
-                      }}
-                    >
-                      <X size={15} /> Remove
-                    </button>
-                  </li>
-                ))}
-                {data.allowlist.length === 0 && <li className="px-4 py-2.5 text-sm text-dim">No guests yet.</li>}
-              </ul>
-            </section>
-
-            <section className="mt-10">
-              <h2 className="display text-2xl">Members ({data.users.length})</h2>
-              <ul className="mt-3 divide-y divide-white/8 rounded-xl border border-white/10">
-                {data.users.map((u) => (
-                  <li key={u.email} className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-sm">
-                    <span>
-                      {u.name} <span className="text-dim">{u.email}</span>
-                    </span>
-                    <span className="text-xs text-dim">{u.people} people mapped</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </>
-        )}
+      <main className="mx-auto max-w-4xl px-5 pt-10">
+        <h1 className="display text-4xl font-light">Admin panel</h1>
+        <p className="mt-2 max-w-[62ch] text-mist">
+          Only admins see this page. Approve members, decide who can sign in, switch features on and off, and keep an eye on AI use.
+        </p>
+        <div className="mt-6 mb-8 flex gap-1 overflow-x-auto scroll-thin rounded-full border border-white/10 p-1 text-sm sm:inline-flex">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTab(t.id)}
+              className={`flex items-center gap-1.5 rounded-full px-4 py-1.5 whitespace-nowrap ${tab === t.id ? "bg-white/12 text-star" : "text-mist hover:text-star"}`}
+            >
+              {t.label}
+              {t.id === "members" && overview?.counts.pending ? (
+                <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-spore px-1 text-[10px] font-bold text-[#2a1d05]">
+                  {overview.counts.pending}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
+        {tab === "overview" && <OverviewTab data={overview} go={setTab} />}
+        {tab === "members" && <MembersTab onChange={refresh} />}
+        {tab === "access" && <AccessTab onSaved={refresh} />}
+        {tab === "features" && <FeaturesTab onSaved={refresh} />}
+        {tab === "ai" && <AiTab overview={overview} onSaved={refresh} />}
       </main>
     </div>
   );

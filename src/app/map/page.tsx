@@ -93,7 +93,7 @@ export default function MapPage() {
         .map((p) => p._id)
     );
   }, [query, people]);
-  const highlight = searchHits ?? (insight ? new Set(insight.nodeIds) : null);
+  const highlight = searchHits ?? (insight && (me?.features.health ?? true) ? new Set(insight.nodeIds) : null);
   const person = people.find((p) => p._id === selected) || null;
 
   const select = (id: string | null) => {
@@ -103,6 +103,15 @@ export default function MapPage() {
   };
 
   const empty = loaded && people.length === 0;
+  const f = me?.features;
+  const can: Record<AddMode, boolean> = {
+    one: true,
+    quick: f?.quickAdd ?? true,
+    describe: Boolean(me?.aiEnabled),
+    import: f?.import ?? true,
+  };
+  const showHealth = f?.health ?? true;
+  const activeTab = showHealth ? tab : "people";
 
   return (
     <main className="relative h-[100dvh] overflow-hidden">
@@ -122,23 +131,31 @@ export default function MapPage() {
             <UserPlus size={15} /> Add person
           </button>
           <div className="panel flex items-center gap-0.5 !rounded-full p-1">
-            <button className="btn btn-quiet" onClick={() => setAdding("quick")} title="Add a group">
-              <Users size={15} /> <span className="hidden sm:inline">Group</span>
-            </button>
-            <button className="btn btn-quiet" onClick={() => setAdding("describe")} title="Describe people in your own words">
-              <Sparkles size={15} /> <span className="hidden sm:inline">Describe</span>
-            </button>
-            <button className="btn btn-quiet" onClick={() => setAdding("import")} title="Import a file">
-              <FileUp size={15} /> <span className="hidden sm:inline">Import</span>
-            </button>
-            <button
-              className="btn btn-quiet"
-              onClick={() => download("my-mycelium-map.csv", exportCsv(people, links))}
-              title="Download your map as CSV"
-              aria-label="Download your map"
-            >
-              <Download size={15} />
-            </button>
+            {can.quick && (
+              <button className="btn btn-quiet" onClick={() => setAdding("quick")} title="Add a group">
+                <Users size={15} /> <span className="hidden sm:inline">Group</span>
+              </button>
+            )}
+            {can.describe && (
+              <button className="btn btn-quiet" onClick={() => setAdding("describe")} title="Describe people in your own words">
+                <Sparkles size={15} /> <span className="hidden sm:inline">Describe</span>
+              </button>
+            )}
+            {can.import && (
+              <button className="btn btn-quiet" onClick={() => setAdding("import")} title="Import a file">
+                <FileUp size={15} /> <span className="hidden sm:inline">Import</span>
+              </button>
+            )}
+            {(f?.export ?? true) && (
+              <button
+                className="btn btn-quiet"
+                onClick={() => download("my-mycelium-map.csv", exportCsv(people, links))}
+                title="Download your map as CSV"
+                aria-label="Download your map"
+              >
+                <Download size={15} />
+              </button>
+            )}
           </div>
           <label className="panel flex items-center gap-2 !rounded-full px-3 py-1.5">
             <Search size={15} className="text-dim" />
@@ -208,17 +225,17 @@ export default function MapPage() {
             ) : (
               <>
                 <div className="mb-4 flex gap-1 rounded-full border border-white/10 p-1 text-sm">
-                  {(["insights", "people"] as const).map((t) => (
+                  {(showHealth ? (["insights", "people"] as const) : (["people"] as const)).map((t) => (
                     <button
                       key={t}
                       onClick={() => setTab(t)}
-                      className={`flex-1 rounded-full px-3 py-1.5 ${tab === t ? "bg-white/12 text-star" : "text-mist hover:text-star"}`}
+                      className={`flex-1 rounded-full px-3 py-1.5 ${activeTab === t ? "bg-white/12 text-star" : "text-mist hover:text-star"}`}
                     >
                       {t === "insights" ? "Network health" : `People (${people.length})`}
                     </button>
                   ))}
                 </div>
-                {tab === "insights" ? (
+                {activeTab === "insights" ? (
                   <InsightsPanel report={report} activeId={insight?.id || null} onPick={(i) => (setInsight(i), setQuery(""))} />
                 ) : (
                   <ul className="divide-y divide-white/6">
@@ -262,7 +279,9 @@ export default function MapPage() {
                 { m: "import" as const, t: "Import a file", d: "Use the Mycelium template or your LinkedIn Connections.csv.", i: <FileUp size={18} /> },
                 { m: "quick" as const, t: "Add a group", d: "Paste a list of names from one circle, like your class or team.", i: <Users size={18} /> },
                 { m: "one" as const, t: "Add one person", d: "Fill in a single card with as much detail as you like.", i: <UserPlus size={18} /> },
-              ].map((o) => (
+              ]
+                .filter((o) => can[o.m])
+                .map((o) => (
                 <button key={o.m} onClick={() => setAdding(o.m)} className="panel p-5 text-left transition-colors hover:border-spore/50">
                   <span className="text-spore">{o.i}</span>
                   <span className="display mt-2 block text-xl">{o.t}</span>
@@ -280,6 +299,7 @@ export default function MapPage() {
           circles={circles}
           existingNames={people.map((p) => p.name)}
           aiEnabled={Boolean(me?.aiEnabled)}
+          enabled={can}
           onClose={() => setAdding(null)}
           onDone={async (m) => {
             setAdding(null);

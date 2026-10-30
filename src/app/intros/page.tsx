@@ -15,7 +15,7 @@ const STATUS: Record<Intro["status"], { label: string; cls: string }> = {
 const when = (iso: string) => new Date(iso).toLocaleDateString(undefined, { day: "numeric", month: "short" });
 
 export default function IntrosPage() {
-  const { refreshMe } = useMe();
+  const { me, refreshMe } = useMe();
   const [data, setData] = useState<{ received: Intro[]; sent: Intro[] } | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
 
@@ -41,6 +41,11 @@ export default function IntrosPage() {
       <Nav />
       <main className="mx-auto max-w-3xl px-5 pt-10">
         <h1 className="display text-4xl font-light">Introductions</h1>
+        {me && !me.features.intros && (
+          <p className="mt-3 rounded-xl border border-rose/25 bg-rose/5 px-4 py-3 text-sm text-mist">
+            Introduction requests are switched off by the admin. You can still see past requests below.
+          </p>
+        )}
         <p className="mt-2 max-w-[60ch] text-mist">
           When someone in the club asks you to introduce them to a person in your map, it shows up here. You decide, and only
           you know who it is.

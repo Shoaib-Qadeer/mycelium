@@ -24,10 +24,10 @@ export function blindLabel(n: { role: string; field: string; org: string; city: 
   return `${who}${where}${city}`;
 }
 
-export async function buildClubGraph(viewer: string): Promise<ClubGraph> {
+export async function buildClubGraph(viewer: string, showOrg = true): Promise<ClubGraph> {
   const db = await getDb();
   const [users, people, links] = await Promise.all([
-    db.collection("users").find({}, { projection: { email: 1, name: 1, image: 1 } }).toArray(),
+    db.collection("users").find({ status: { $nin: ["pending", "blocked"] } }, { projection: { email: 1, name: 1, image: 1 } }).toArray(),
     db.collection("people").find({ hidden: { $ne: true } }).toArray(),
     db.collection("links").find({}).toArray(),
   ]);
@@ -84,7 +84,11 @@ export async function buildClubGraph(viewer: string): Promise<ClubGraph> {
     }
     addEdge(`u:${owner}`, id, "knows");
   }
-  for (const n of nodes.values()) if (n.type === "person") n.label = blindLabel(n);
+  for (const n of nodes.values()) {
+    if (n.type !== "person") continue;
+    if (!showOrg) n.org = "";
+    n.label = blindLabel(n);
+  }
 
   for (const l of links) {
     const a = nodeOfPerson.get(String(l.a));

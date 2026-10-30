@@ -20,6 +20,8 @@ export async function getDb(): Promise<Db> {
         db.collection("allowlist").createIndex({ email: 1 }, { unique: true }),
         db.collection("intros").createIndex({ toEmail: 1 }),
         db.collection("intros").createIndex({ fromEmail: 1 }),
+        db.collection("ai_log").createIndex({ at: -1 }),
+        db.collection("ai_log").createIndex({ user: 1, at: -1 }),
       ]).catch(() => {});
       return client;
     });

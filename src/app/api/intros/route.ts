@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ObjectId, type WithId, type Document } from "mongodb";
-import { getMe, unauthorized, bad } from "@/lib/auth";
+import { getMe, unauthorized, bad, featureOff } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 import { getDb } from "@/lib/mongo";
 import { blindLabel, personNodeKey } from "@/lib/club";
 import type { Intro } from "@/lib/types";
@@ -43,6 +44,8 @@ export async function GET() {
 export async function POST(req: Request) {
   const me = await getMe();
   if (!me) return unauthorized();
+  const off = await featureOff("intros");
+  if (off) return off;
   const { nodeId, viaEmail, message } = (await req.json().catch(() => ({}))) as {
     nodeId?: string;
     viaEmail?: string;
@@ -53,7 +56,10 @@ export async function POST(req: Request) {
   if (!message || message.trim().length < 10) return bad("Add a short note on why you'd like to meet (10+ characters).");
 
   const db = await getDb();
-  const users = await db.collection("users").find({}, { projection: { email: 1, name: 1 } }).toArray();
+  const users = await db
+    .collection("users")
+    .find({ status: { $nin: ["pending", "blocked"] } }, { projection: { email: 1, name: 1 } })
+    .toArray();
   const members = new Set(users.map((u) => u.email as string));
   const via = users.find((u) => u.email === viaEmail);
   if (!via) return bad("That member isn't on Mycelium.");
@@ -75,7 +81,12 @@ export async function POST(req: Request) {
     toEmail: viaEmail,
     toName: (via.name as string) || viaEmail,
     personId: person._id.toString(),
-    personLabel: blindLabel({ role: person.role || "", field: person.field || "", org: person.org || "", city: person.city || "" }),
+    personLabel: blindLabel({
+      role: person.role || "",
+      field: person.field || "",
+      org: (await getSettings()).privacy.showOrgInClub ? person.org || "" : "",
+      city: person.city || "",
+    }),
     message: message.trim().slice(0, 1000),
     status: "pending",
     responseNote: "",

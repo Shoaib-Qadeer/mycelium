@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getMe, unauthorized, bad } from "@/lib/auth";
+import { getMe, unauthorized, bad, featureOff } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 import { buildClubGraph } from "@/lib/club";
 import { geminiJSON } from "@/lib/gemini";
 import type { BlindNode } from "@/lib/types";
@@ -18,13 +19,16 @@ function keywordScore(q: string, n: BlindNode) {
 export async function POST(req: Request) {
   const me = await getMe();
   if (!me) return unauthorized();
+  const off = await featureOff("clubSearch");
+  if (off) return off;
+  const settings = await getSettings();
   const { question } = (await req.json().catch(() => ({}))) as { question?: string };
   if (!question || question.trim().length < 3) return bad("Ask who you're looking for.");
-  const graph = await buildClubGraph(me.email);
+  const graph = await buildClubGraph(me.email, settings.privacy.showOrgInClub);
   const candidates = graph.nodes.filter((n) => n.type === "person");
   if (!candidates.length) return NextResponse.json({ matches: [], mode: "none" });
 
-  if (process.env.GEMINI_API_KEY) {
+  if (process.env.GEMINI_API_KEY && settings.ai.enabled) {
     try {
       const list = candidates.slice(0, 500).map((n) => ({
         id: n.id,
@@ -39,7 +43,8 @@ export async function POST(req: Request) {
         `A student club pooled its members' networks. Find the people who best answer this request.
 Request: "${question.slice(0, 400)}"
 People (anonymous): ${JSON.stringify(list)}
-Return JSON {"matches":[{"id": string, "reason": one short sentence on why they fit}]} with at most 6 matches, best first. Return an empty list if nobody plausibly fits.`
+${settings.ai.searchGuidance ? `Extra guidance from the club admin: ${settings.ai.searchGuidance}\n` : ""}Return JSON {"matches":[{"id": string, "reason": one short sentence on why they fit}]} with at most 6 matches, best first. Return an empty list if nobody plausibly fits.`,
+        { kind: "search", user: me.email }
       );
       const valid = new Set(candidates.map((c) => c.id));
       const matches = (out.matches || []).filter((m) => valid.has(m.id)).slice(0, 6);

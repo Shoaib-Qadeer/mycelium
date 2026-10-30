@@ -49,9 +49,11 @@ export default function AddModal({
   circles,
   existingNames,
   aiEnabled,
+  enabled,
   onClose,
   onDone,
 }: {
+  enabled: Record<AddMode, boolean>;
   initial: AddMode;
   circles: string[];
   existingNames: string[];
@@ -78,7 +80,7 @@ export default function AddModal({
   return (
     <Modal title="Add to your map" onClose={onClose} wide={tab === "describe" || tab === "import"}>
       <div className="mb-4 flex gap-1 overflow-x-auto scroll-thin rounded-full border border-white/10 p-1">
-        {TABS.map((t) => (
+        {TABS.filter((t) => enabled[t.id]).map((t) => (
           <button
             key={t.id}
             onClick={() => (setTab(t.id), setErr(""))}

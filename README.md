@@ -11,7 +11,12 @@ Built for the Learning Planet Institute club, from an idea by Michael Bäcklund.
 - **Network health**: people who hold a group together (single points of failure), brokers between circles, people who know nobody else in your map, fading close ties, over-reliance on one circle, fields where you know only one person, and suggested introductions between your own friends.
 - **Club reach**: everyone's maps woven together, shown blind (roles, organizations, places and interests, never names, notes or emails). Merges people several members know, shows how many people you're 2 or 3 steps from, field coverage and blind spots, and a "Who are you trying to reach?" search with the warmest path.
 - **Intros**: ask the member who knows someone for an introduction. They see your note, decide, and reply. Names are never revealed by the app.
-- **Access**: `@learningplanetinstitute.org` accounts can sign in; admins invite guests from other domains on the Access page.
+- **Admin panel** (admins only, via the Admin panel button in the top bar):
+  - **Overview**: members, waiting approvals, weekly activity, people mapped, intros, database and AI budgets, AI calls over 14 days.
+  - **Members**: approve, decline, pause or restore access, delete a member with their whole map (type DELETE), export CSV.
+  - **Access**: open or close sign-in for the whole domain, require approval for new members, guest list for other domains.
+  - **Features**: switch Add a group, Describe (AI), Import, Download, Network health, Club reach, club search and intro requests on or off; show or hide organizations on club cards; an announcement line in the top bar.
+  - **AI**: master switch, model, temperature, daily limits for the club and per member, extra prompt guidance, recent call log.
 
 People marked "Keep out of club reach" never appear in the club view.
 
